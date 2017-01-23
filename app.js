@@ -3,6 +3,8 @@ var bodyParser = require('body-parser');
 var morgan     = require('morgan');
 var cors       = require('cors');
 var kue        = require('kue');
+var spawn      = require('child_process').spawn;
+var fs         = require('fs');
 
 
 
@@ -35,23 +37,62 @@ app.use(function(err, req, res, next){
   res.sendStatus(500);
 });
 
-var job = queue.create('music', {
-    file: 'welcome email for tj'
-}).save( function(err){
-   if( !err ) console.log( job.id );
+
+const musicFolder = '/home/lshandra/Música';
+
+kue.Job.rangeByState( 'enqueue', 0, 10000, 'asc', function( err, jobs ) {
+  if(!jobs.length){
+    fs.readdir(musicFolder, function(err, files) {
+      files.forEach(function(file){
+        music_file =  musicFolder+"/"+file;
+        console.log(music_file);
+        var job = queue.create('music', {
+            file: music_file
+        }).save( function(err){
+           if( !err ) console.log( job.id );
+        });
+
+      });
+    })
+  }
 });
+
+
+
+
 
 queue.process('music', function(job, done){
-  file(job.data.file, done);
+  console.log("PROCESS");
+  play_file(job.data.file, done);
 });
 
-function file(file_name, done) {
-  if(!file_name) {
-    console.log("Proceso");
-    return done(new Error('invalid to address'));
+function play_file(file_name, done) {
+  if(file_name) {
+    var player = spawn('mplayer', ['-cache', '1024', file_name ]);
+
+    player.stdout.on('data', function (data) {
+      //console.log('stdout: ' + data);
+    //  ls.stdin.write('/log warning message="1"');
+    });
+
+    player.stderr.on('data', function (data) {
+      console.log('stderr: ' + data);
+    });
+
+    player.on('exit', function (code) {
+      console.log('child process exited with code ' + code);
+      if(code === 0){//GOOD
+        done();
+      }else {       //BAD
+        return done(new Error('Error playing file'));;
+      }
+    });
+
+    player.on('error', function (code) {
+      console.log('error ' + code);
+      return done(new Error('Error playing file'));
+    });
   }
-  // email send stuff...
-  done();
 }
 
 app.listen(3000, function () {
