@@ -38,21 +38,22 @@ app.use(function(err, req, res, next){
 });
 
 
-const musicFolder = '/media/usb/musci/';
+const musicFolder = '/media/usb/music/';
 
 kue.Job.rangeByState( 'enqueue', 0, 10000, 'asc', function( err, jobs ) {
   if(!jobs.length){
     fs.readdir(musicFolder, function(err, files) {
-      files.forEach(function(file){
-        music_file =  musicFolder+file;
-        console.log(music_file);
-        var job = queue.create('music', {
-            file: music_file
-        }).save( function(err){
-           if( !err ) console.log( job.id );
+      if(files){
+        files.forEach(function(file){
+          music_file =  musicFolder+file;
+          console.log(music_file);
+          var job = queue.create('music', {
+              file: music_file
+          }).save( function(err){
+             if( !err ) console.log( job.id );
+          });
         });
-
-      });
+      }
     })
   }
 });
