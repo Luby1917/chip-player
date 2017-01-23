@@ -38,13 +38,13 @@ app.use(function(err, req, res, next){
 });
 
 
-const musicFolder = '/home/lshandra/Música';
+const musicFolder = '/media/usb/musci/';
 
 kue.Job.rangeByState( 'enqueue', 0, 10000, 'asc', function( err, jobs ) {
   if(!jobs.length){
     fs.readdir(musicFolder, function(err, files) {
       files.forEach(function(file){
-        music_file =  musicFolder+"/"+file;
+        music_file =  musicFolder+file;
         console.log(music_file);
         var job = queue.create('music', {
             file: music_file
@@ -71,8 +71,7 @@ function play_file(file_name, done) {
     var player = spawn('mplayer', ['-cache', '1024', file_name ]);
 
     player.stdout.on('data', function (data) {
-      //console.log('stdout: ' + data);
-    //  ls.stdin.write('/log warning message="1"');
+      setTimeout(function(){done();}, 5000);
     });
 
     player.stderr.on('data', function (data) {
