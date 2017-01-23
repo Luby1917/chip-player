@@ -74,7 +74,7 @@ function play_file(file_name, done) {
     var player = spawn('mplayer', ['-cache', '1024', file_name ]);
 
     player.stdout.on('data', function (data) {
-      setTimeout(function(){done();}, 5000);
+      //setTimeout(function(){done();}, 5000);
     });
 
     player.stderr.on('data', function (data) {
