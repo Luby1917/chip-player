@@ -49,7 +49,9 @@ kue.Job.rangeByState( 'enqueue', 0, 10000, 'asc', function( err, jobs ) {
           console.log(music_file);
           var job = queue.create('music', {
               file: music_file
-          }).save( function(err){
+          })
+          .removeOnComplete( true )
+          .save( function(err){
              if( !err ) console.log( job.id );
           });
         });
@@ -95,6 +97,7 @@ function play_file(file_name, done) {
   }
 }
 
+kue.app.listen(3030);
 app.listen(3000, function () {
-  console.log('Example app listening on port 3000!');
+  console.log('ChipPlayer listening on port 3000!');
 });
