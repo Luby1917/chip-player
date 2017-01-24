@@ -5,6 +5,7 @@ var cors       = require('cors');
 var kue        = require('kue');
 var spawn      = require('child_process').spawn;
 var fs         = require('fs');
+var Player     = require('player');
 
 
 
@@ -72,8 +73,8 @@ queue.process('music', function(job, done){
 
 function play_file(file_name, done) {
   if(file_name) {
-    var player = spawn('mplayer', ['-cache', '1024', file_name ]);
-
+    //var player = spawn('mplayer', ['-cache', '1024', file_name ]);
+    /*
     player.stdout.on('data', function (data) {
       //setTimeout(function(){done();}, 5000);
     });
@@ -85,8 +86,10 @@ function play_file(file_name, done) {
     player.on('exit', function (code) {
       console.log('child process exited with code ' + code);
       if(code === 0){//GOOD
+        console.log("OK");
         done();
       }else {       //BAD
+        console.log("ERROR");
         return done(new Error('Error playing file'));;
       }
     });
@@ -94,6 +97,28 @@ function play_file(file_name, done) {
     player.on('error', function (code) {
       console.log('error ' + code);
       return done(new Error('Error playing file'));
+    });
+    */
+    var player = new Player(file_name);
+    player.play();
+
+    player.on('playing',function(item){
+      console.log('im playing... src:' + item);
+    });
+
+    // event: on playend
+    player.on('playend',function(item){
+      // return a playend item
+      console.log('src:' + item + ' play done, switching to next one ...');
+      console.log("OK");
+      done();
+    });
+
+    // event: on error
+    player.on('error', function(err){
+      // when error occurs
+      console.log(err);
+      return done(new Error('Error playing file'));v
     });
   }
 }
