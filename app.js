@@ -48,6 +48,7 @@ kue.Job.rangeByState( 'enqueue', 0, 10000, 'asc', function( err, jobs ) {
           music_file =  musicFolder+file;
           console.log(music_file);
           var job = queue.create('music', {
+              title: file,
               file: music_file
           })
           .removeOnComplete( true )
